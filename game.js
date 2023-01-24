@@ -1,3 +1,9 @@
+const KEYS = {
+    LEFT: 'ArrowLeft',
+    RIGHT: 'ArrowRight',
+    SPACE: 'Space'
+};
+
 let game = {
     ctx: null,
     platform: null,
@@ -5,14 +11,33 @@ let game = {
     blocks: [],
     rows: 4,
     cols: 8,
+    width: 640,
+    height: 360,
     sprites: {
         background: null,
         ball: null,
         platform: null,
         block: null
     },
+    tick_count: 0,
     init: function() {
         this.ctx = document.getElementById('mycanvas').getContext('2d');
+        this.setEvents();
+    },
+    setEvents() {
+        window.addEventListener('keydown', (e) => {
+            // console.log(e.code)
+            if (e.code === KEYS.SPACE) {
+                this.platform.fire();
+            } else if (e.code === KEYS.LEFT || e.code === KEYS.RIGHT) {
+                this.platform.start(e.code);
+            }
+            this.run() // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        });
+
+        window.addEventListener('keyup', (e) => {
+            this.platform.stop();
+        });
     },
     preload(callback) {
         let loaded = 0;
@@ -42,12 +67,40 @@ let game = {
             }
         }
     },
+    update() {
+        this.platform.move();
+        this.ball.move();
+    },
     run() {
-        window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => { // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            this.update();
             this.render();
+            console.log('render complited');
+
+            // DANGER RECURSION BELOW
+            // this.run()  
+
         });
+
+
+
+      
+
+        // setInterval(() => {
+        //     window.requestAnimationFrame(() => {
+        //         this.update();
+        //         this.render();
+        //         console.log('render complited');
+        //     })
+        // }, 100)
+
+
+
+
+
     },
     render() {
+        this.ctx.clearRect(0, 0, this.width, this.height);
         this.ctx.drawImage(this.sprites.background, 0, 0);
         this.ctx.drawImage(this.sprites.ball, 0, 0, this.ball.width, this.ball.height, this.ball.x, this.ball.y, this.ball.width, this.ball.height); 
         this.ctx.drawImage(this.sprites.platform, this.platform.x, this.platform.y);
@@ -64,6 +117,9 @@ let game = {
             this.create();
             this.run();
         });
+    },
+    random(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
     }
 };
 
@@ -71,16 +127,57 @@ game.ball = {
     x: 310,
     y: 280,
     width: 20,
-    height: 20
+    height: 20,
+    dy: 0,
+    dx: 0,
+    velocity: 10,
+    start() {
+       this.dy = -this.velocity;
+       this.dx = game.random(-this.velocity, +this.velocity) ;
+    },
+    move() {
+        if (this.dy) {
+            this.y += this.dy;
+        }
+        if (this.dx) {
+            this.x += this.dx;
+        }
+    }
 };
 
 game.platform = {
+    velocity: 20,
+    dx: 0,
     x: 270,
-    y: 300
+    y: 300,
+    ball: game.ball,
+    fire() {
+        if (this.ball) {
+            this.ball.start();
+            this.ball = null;
+        }
+    },
+    start(direction) {
+        if (direction === KEYS.LEFT) {
+            this.dx = -this.velocity; 
+        } else if (direction === KEYS.RIGHT) {
+            this.dx = this.velocity;
+        }
+    },
+    stop() {
+        this.dx = 0;
+    },
+    move() {
+        if (this.dx) {
+            this.x += this.dx;
+            if (this.ball) {
+                this.ball.x += this.dx;
+            }
+            
+         };
+    }
 };
 
 window.addEventListener('load', () => {
     game.start();
 });
-
-console.log(game.blocks)
