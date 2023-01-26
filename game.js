@@ -21,10 +21,17 @@ let game = {
         platform: null,
         block: null
     },
-    tick_count: 0,
-    init: function() {
+    sounds: {
+        bump: null,
+    },
+    init() {
         this.ctx = document.getElementById('mycanvas').getContext('2d');
+        this.setTextFont();
         this.setEvents();
+    },
+    setTextFont() {
+        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.font = '20px Arial';
     },
     setEvents() {
         window.addEventListener('keydown', (e) => {
@@ -44,8 +51,9 @@ let game = {
     preload(callback) {
         let loaded = 0;
         let required = Object.keys(this.sprites).length;
+            required += Object.keys(this.sounds).length;
 
-        let onImageLoad = () => {
+        let onResourceLoad = () => {
             ++loaded;
 
             if (loaded >= required) {
@@ -53,10 +61,24 @@ let game = {
             }
         };
 
+        this.preloadSprites(onResourceLoad);
+        this.preloadAudio(onResourceLoad);
+
+        
+
+        
+    },
+    preloadSprites(onResourceLoad) {
         for (let key in this.sprites) {
             this.sprites[key] = new Image();
             this.sprites[key].src = `img/${key}.png`;
-            this.sprites[key].addEventListener('load', onImageLoad);
+            this.sprites[key].addEventListener('load', onResourceLoad);
+        }
+    },
+    preloadAudio(onResourceLoad) {
+        for (let key in this.sounds) {
+            this.sounds[key] = new Audio(`sounds/${key}.mp3`);
+            this.sounds[key].addEventListener('canplaythrough', onResourceLoad, {once: true});
         }
     },
     create() {
@@ -93,12 +115,14 @@ let game = {
                     this.ball.bumpBlock(block);
 
                     this.addScore();
+                    this.sounds.bump.play();
                 }
             }
     },
     collidePlatform() {
         if (this.ball.collide(this.platform)) {
             this.ball.bumpPlatform(this.platform);
+            this.sounds.bump.play();
         }
     },
     run() {
@@ -109,10 +133,8 @@ let game = {
             this.update();
             this.render();
             console.log('render complited');
-
             // DANGER RECURSION BELOW
             // this.run()  
-
         });
 
         // setInterval(() => {
@@ -120,7 +142,6 @@ let game = {
         //         this.update();
         //         this.render();
         //         console.log('render complited');
-                
         //     })
         // }, 60)
         }
@@ -131,6 +152,7 @@ let game = {
         this.ctx.drawImage(this.sprites.ball, 0, 0, this.ball.width, this.ball.height, this.ball.x, this.ball.y, this.ball.width, this.ball.height); 
         this.ctx.drawImage(this.sprites.platform, this.platform.x, this.platform.y);
         this.renderBlocks();
+        this.ctx.fillText(`Score: ${this.score}`, 15, 20);
     },
     renderBlocks() {
         for (let block of this.blocks) {
@@ -223,12 +245,15 @@ game.ball = {
         if (ballLeft < worldLeft) {
             this.x = 0;
             this.dx = this.velocity;
+            game.sounds.bump.play();
         } else if (ballRight > worldRight) {
             this.x = worldRight - this.width;
             this.dx = -this.velocity;
+            game.sounds.bump.play();
         } else if (ballTop < worldTop) {
             this.y = 0;
             this.dy = this.velocity;
+            game.sounds.bump.play();
         } else if (ballBottom > worldBottom) {
             game.end('YOU LOSE');
         }
