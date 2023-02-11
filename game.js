@@ -41,7 +41,7 @@ let game = {
             } else if (e.code === KEYS.LEFT || e.code === KEYS.RIGHT) {
                 this.platform.start(e.code);
             }
-            this.run() // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            // this.run() // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 44 and 127 ln
         });
 
         window.addEventListener('keyup', (e) => {
@@ -124,22 +124,20 @@ let game = {
     run() {
         if (this.running) {
 
-        
-        window.requestAnimationFrame(() => { // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            this.update();
-            this.render();
-            console.log('render complited');
-            // DANGER RECURSION BELOW
-            // this.run()  
-        });
+        // DELETE  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  44 and 127 ln
+        // window.requestAnimationFrame(() => { 
+        //     this.update();
+        //     this.render();
+        //     console.log('render complited');  
+        // });
 
-        // setInterval(() => {
-        //     window.requestAnimationFrame(() => {
-        //         this.update();
-        //         this.render();
-        //         console.log('render complited');
-        //     })
-        // }, 60)
+        setInterval(() => {
+            window.requestAnimationFrame(() => {
+                this.update();
+                this.render();
+                console.log('render complited');
+            })
+        }, 60)
         }
     },
     render() {
@@ -185,10 +183,10 @@ game.ball = {
     dx: 0,
     velocity: 10,
     start() {
-       this.dy = -this.velocity;
-       this.dx = game.random(-this.velocity, +this.velocity);
+        this.dy = -this.velocity;
+        this.dx = game.random(-this.velocity, +this.velocity);
 
-       this.animate();
+        this.animate();
     },
     animate() {
         setInterval(() => {
@@ -197,7 +195,7 @@ game.ball = {
             if (this.frame === 3) {
                 this.frame = 0;
             };
-       }, 100);
+        }, 100);
     },
     move() {
         if (this.dy) {
@@ -298,7 +296,7 @@ game.platform = {
             if (this.ball) {
                 this.ball.x += this.dx;
             }
-         };
+        };
     },
     getTouchOffset(x) {
         let diff = (this.x + this.width) - x;
